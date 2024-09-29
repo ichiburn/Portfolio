@@ -61,6 +61,7 @@ const translations = {
     confirm: "Confirm",
     fullName: "Yamada Ichiban",
     contactName: "Full Name or Company Name",
+    copyright: "© 2024 Yamada Ichiban. All rights reserved.",
   },
   ja: {
     skill: "スキル",
@@ -111,6 +112,7 @@ const translations = {
     confirm: "確認",
     fullName: "山田 一番",
     contactName: "氏名または企業名",
+    copyright: "© 2024 Yamada Ichiban. All rights reserved.",
   },
 };
 
@@ -256,7 +258,7 @@ export function Page() {
   );
 
   return (
-    <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground relative overflow-hidden flex flex-col">
       <Particles
         id="tsparticles"
         init={particlesInit}
@@ -607,6 +609,13 @@ export function Page() {
           )}
         </div>
       </section>
+
+      {/* フッター */}
+      <footer className="py-6 bg-secondary mt-auto">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-sm text-muted-foreground">{t("copyright")}</p>
+        </div>
+      </footer>
     </div>
   );
 }
