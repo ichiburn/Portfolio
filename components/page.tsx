@@ -17,7 +17,7 @@ const translations = {
     project: "Project",
     career: "Career",
     contact: "Contact",
-    name: "Ichiban Yamada",
+    name: "Full Name",
     email: "Email",
     message: "Message",
     send: "Send",
@@ -56,13 +56,18 @@ const translations = {
     planningToEnroll: "Planning to enroll (3rd year transfer)",
     jobTitle: "Programmer & Creator",
     companyName: "Defense Design Co., Ltd.",
+    confirmTitle: "Confirmation",
+    back: "Back",
+    confirm: "Confirm",
+    fullName: "Yamada Ichiban",
+    contactName: "Full Name or Company Name",
   },
   ja: {
     skill: "スキル",
     project: "プロジェクト",
     career: "経歴",
     contact: "お問い合わせ",
-    name: "山田　一番",
+    name: "氏名",
     email: "メールアドレス",
     message: "メッセージ",
     send: "送信",
@@ -82,8 +87,8 @@ const translations = {
     introduction: "自己紹介",
     introText: [
       "木造建築の構造設計者として働く中で、建設業界におけるより効率的な設計プロセスの必要性を実感しました。",
-      "この経験から、プログラミングやAI技術の習得を決意しました。",
-      "現在、様々なプログラミング言語や技術を学び、建設業界と革新的なテクノロジーソリューションの架け橋となることを目指しています。",
+      "この経験から、プログラミングやAI技術、Blockchain技術の習得を決意しました。",
+      "現在、様々なプログラミング言語や技術を学び、ゲーム開発、建設業界、不動産業界、金融業界等の革新的なテクノロジーソリューションの架け橋となり社会的に役立つことを目指しています。",
     ],
     skillsIntro: [
       "私のスキルセットはウェブ開発から先端技術まで幅広く及びます。",
@@ -101,6 +106,11 @@ const translations = {
     planningToEnroll: "編入学予定（3年次）",
     jobTitle: "プログラマー & クリエイター",
     companyName: "(株)デファンス設計",
+    confirmTitle: "確認",
+    back: "戻る",
+    confirm: "確認",
+    fullName: "山田 一番",
+    contactName: "氏名または企業名",
   },
 };
 
@@ -122,6 +132,12 @@ const skillCategories = {
 export function Page() {
   const [lang, setLang] = useState<"en" | "ja">("ja");
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [isConfirming, setIsConfirming] = useState(false);
 
   const t = (key: keyof typeof translations.en): string =>
     translations[lang][key] as string;
@@ -193,6 +209,51 @@ export function Page() {
       </motion.div>
     );
   };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsConfirming(true);
+  };
+
+  const handleConfirm = () => {
+    // ここで実際の送信処理を行います
+    console.log("送信データ:", formData);
+    // 送信後の処理（例：フォームのリセット、完了メッセージの表示など）
+    setFormData({ name: "", email: "", message: "" });
+    setIsConfirming(false);
+  };
+
+  const handleBack = () => {
+    setIsConfirming(false);
+  };
+
+  const ConfirmationScreen = () => (
+    <div className="space-y-4">
+      <h3 className="text-xl font-semibold">{t("confirmTitle")}</h3>
+      <p>
+        <strong>{t("name")}:</strong> {formData.name}
+      </p>
+      <p>
+        <strong>{t("email")}:</strong> {formData.email}
+      </p>
+      <p>
+        <strong>{t("message")}:</strong> {formData.message}
+      </p>
+      <div className="flex justify-between mt-6">
+        <Button onClick={handleBack} variant="outline">
+          {t("back")}
+        </Button>
+        <Button onClick={handleConfirm}>{t("send")}</Button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
@@ -287,7 +348,7 @@ export function Page() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.8 }}
         >
-          {t("name")}
+          {t("fullName")}
         </motion.h1>
         <motion.p
           className="text-xl md:text-2xl mb-8 text-muted-foreground"
@@ -509,20 +570,41 @@ export function Page() {
             {t("contact")}
           </h2>
           <p className="text-lg mb-8 text-center">{t("contactIntro")}</p>
-          <form className="space-y-6">
-            <Input placeholder={t("name")} className="text-base" />
-            <Input
-              type="email"
-              placeholder={t("email")}
-              className="text-base"
-            />
-            <Textarea
-              placeholder={t("message")}
-              className="text-base"
-              rows={6}
-            />
-            <Button className="w-full text-base">{t("send")}</Button>
-          </form>
+          {isConfirming ? (
+            <ConfirmationScreen />
+          ) : (
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <Input
+                name="name"
+                placeholder={t("contactName")}
+                className="text-base"
+                value={formData.name}
+                onChange={handleInputChange}
+                required
+              />
+              <Input
+                name="email"
+                type="email"
+                placeholder={t("email")}
+                className="text-base"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+              />
+              <Textarea
+                name="message"
+                placeholder={t("message")}
+                className="text-base"
+                rows={6}
+                value={formData.message}
+                onChange={handleInputChange}
+                required
+              />
+              <Button type="submit" className="w-full text-base">
+                {t("confirm")}
+              </Button>
+            </form>
+          )}
         </div>
       </section>
     </div>
