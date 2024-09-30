@@ -1,18 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useInView } from "react-intersection-observer";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { motion } from "framer-motion";
+import Particles from "react-particles";
+import { loadSlim } from "tsparticles-slim";
+import type { Engine } from "tsparticles-engine";
 import { Mail, Github, Linkedin, Globe, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import Particles from "react-particles";
-import { loadFull } from "tsparticles";
-import type { Engine } from "tsparticles-engine";
-import { Progress } from "@/components/ui/progress";
+import { AnimatePresence } from "framer-motion";
 
+// translations と skillCategories の定義をここに追加
 const translations = {
   en: {
     skill: "Skills",
@@ -118,7 +118,21 @@ const translations = {
   },
 };
 
-const skillCategories = {
+type SkillCategory = {
+  name: string;
+  level: number;
+  color: string;
+};
+
+type SkillCategories = {
+  programmingLanguages: SkillCategory[];
+  frameworks: SkillCategory[];
+  tools: SkillCategory[];
+  advancedTechnologies: SkillCategory[];
+  design: SkillCategory[];
+};
+
+const skillCategories: SkillCategories = {
   programmingLanguages: [
     {
       name: "HTML&CSS",
@@ -195,8 +209,13 @@ export function Page() {
   });
   const [isConfirming, setIsConfirming] = useState(false);
 
-  const t = (key: keyof typeof translations.en): string | string[] =>
-    translations[lang][key];
+  const t = useCallback(
+    (key: keyof typeof translations.en): string => {
+      const value = translations[lang][key];
+      return Array.isArray(value) ? value.join(" ") : value;
+    },
+    [lang]
+  );
 
   useEffect(() => {
     // ローカルストレージからテーマを取得
@@ -223,77 +242,77 @@ export function Page() {
     setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
   };
 
-  const particlesInit = async (engine: Engine) => {
-    await loadFull(engine);
-  };
+  const particlesInit = useCallback(async (engine: Engine) => {
+    await loadSlim(engine);
+  }, []);
 
-  const particlesLoaded = (container: any) => {
-    console.log(container);
-  };
+  const fadeInUp = useMemo(
+    () => ({
+      hidden: { opacity: 0, y: 20 },
+      visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+    }),
+    []
+  );
 
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-  };
-
-  const staggerChildren = {
-    visible: {
-      transition: {
-        staggerChildren: 0.2,
+  const staggerChildren = useMemo(
+    () => ({
+      visible: {
+        transition: {
+          staggerChildren: 0.2,
+        },
       },
-    },
-  };
+    }),
+    []
+  );
 
-  const renderSkillCategory = (category: keyof typeof skillCategories) => {
-    const [ref, inView] = useInView({
-      triggerOnce: true,
-      threshold: 0.1,
-    });
-
-    return (
-      <motion.div
-        key={category}
-        ref={ref}
-        initial="hidden"
-        animate={inView ? "visible" : "hidden"}
-        variants={staggerChildren}
-        className="mb-8"
-      >
-        <motion.h3
-          className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200"
-          variants={fadeInUp}
+  const renderSkillCategory = useCallback(
+    (category: keyof typeof skillCategories) => {
+      const categoryTranslationKey = category as keyof typeof translations.en;
+      return (
+        <motion.div
+          key={category}
+          initial="hidden"
+          animate="visible"
+          variants={staggerChildren}
+          className="mb-8"
         >
-          {t(category)}
-        </motion.h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {skillCategories[category].map((skill) => (
-            <motion.div
-              key={skill.name}
-              variants={fadeInUp}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3"
-            >
-              <div className="flex justify-between items-center mb-2">
-                <span className={`text-sm font-medium ${skill.color}`}>
-                  {skill.name}
-                </span>
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                  {skill.level}%
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                <div
-                  className={`h-2.5 rounded-full ${
-                    skill.color.replace("text-", "bg-").split(" ")[0]
-                  }`}
-                  style={{ width: `${skill.level}%` }}
-                ></div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-    );
-  };
+          <motion.h3
+            className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200"
+            variants={fadeInUp}
+          >
+            {t(categoryTranslationKey)}
+          </motion.h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {skillCategories[category].map((skill) => (
+              <motion.div
+                key={skill.name}
+                variants={fadeInUp}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3"
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <span className={`text-sm font-medium ${skill.color}`}>
+                    {skill.name}
+                  </span>
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                    {skill.level}%
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                  <div
+                    className={`h-2.5 rounded-full ${
+                      skill.color.replace("text-", "bg-").split(" ")[0]
+                    }`}
+                    style={{ width: `${skill.level}%` }}
+                  ></div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      );
+    },
+    [t, fadeInUp, staggerChildren]
+  );
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -340,12 +359,41 @@ export function Page() {
     </div>
   );
 
+  const renderIntroText = (text: string | string[]) => {
+    const paragraphs = Array.isArray(text) ? text : [text];
+    return paragraphs.map((paragraph, index) => (
+      <motion.p
+        key={index}
+        className="text-base md:text-lg mb-4 leading-relaxed text-gray-700 dark:text-gray-300"
+        variants={fadeInUp}
+      >
+        {paragraph}
+      </motion.p>
+    ));
+  };
+
+  // セクションの型を定義
+  type SectionType =
+    | "introduction"
+    | "skill"
+    | "project"
+    | "career"
+    | "contact";
+
+  // セクションの配列を定義
+  const sections: SectionType[] = [
+    "introduction",
+    "skill",
+    "project",
+    "career",
+    "contact",
+  ];
+
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden flex flex-col">
       <Particles
         id="tsparticles"
         init={particlesInit}
-        loaded={particlesLoaded}
         options={{
           background: {
             color: {
@@ -509,218 +557,196 @@ export function Page() {
       </motion.section>
 
       {/* 他のセクション */}
-      {["introduction", "skill", "project", "career", "contact"].map(
-        (section, index) => (
-          <motion.section
-            key={section}
-            className={`py-20 md:py-32 relative z-10 ${
-              index % 2 === 0
-                ? "bg-white dark:bg-gray-900"
-                : "bg-gray-50 dark:bg-gray-800"
-            }`}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerChildren}
-          >
-            <div className="container mx-auto px-4">
-              <motion.h2
-                className="text-3xl md:text-4xl font-bold mb-8 text-center text-gray-900 dark:text-white"
-                variants={fadeInUp}
-              >
-                {t(section)}
-              </motion.h2>
-              {section === "introduction" && (
-                <div className="max-w-3xl mx-auto">
-                  {Array.isArray(t("introText")) &&
-                    t("introText").map((paragraph, index) => (
-                      <motion.p
-                        key={index}
-                        className="text-base md:text-lg mb-4 leading-relaxed text-gray-700 dark:text-gray-300"
-                        variants={fadeInUp}
-                      >
-                        {paragraph}
-                      </motion.p>
-                    ))}
+      {sections.map((section, index) => (
+        <motion.section
+          key={section}
+          className={`py-20 md:py-32 relative z-10 ${
+            index % 2 === 0
+              ? "bg-white dark:bg-gray-900"
+              : "bg-gray-50 dark:bg-gray-800"
+          }`}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={staggerChildren}
+        >
+          <div className="container mx-auto px-4">
+            <motion.h2
+              className="text-3xl md:text-4xl font-bold mb-8 text-center text-gray-900 dark:text-white"
+              variants={fadeInUp}
+            >
+              {t(section)}
+            </motion.h2>
+            {section === "introduction" && (
+              <div className="max-w-3xl mx-auto">
+                {renderIntroText(t("introText"))}
+              </div>
+            )}
+            {section === "skill" && (
+              <>
+                <div className="max-w-3xl mx-auto mb-12">
+                  {renderIntroText(t("skillsIntro"))}
                 </div>
-              )}
-              {section === "skill" && (
-                <>
-                  <div className="max-w-3xl mx-auto mb-12">
-                    {Array.isArray(t("skillsIntro")) &&
-                      t("skillsIntro").map((paragraph, index) => (
-                        <motion.p
-                          key={index}
-                          className="text-base md:text-lg mb-4 leading-relaxed text-gray-700 dark:text-gray-300"
-                          variants={fadeInUp}
-                        >
-                          {paragraph}
-                        </motion.p>
-                      ))}
-                  </div>
-                  <div className="grid gap-8 md:gap-12">
-                    {Object.keys(skillCategories).map((category) =>
-                      renderSkillCategory(
-                        category as keyof typeof skillCategories
-                      )
-                    )}
-                  </div>
-                </>
-              )}
-              {section === "project" && (
-                <>
-                  <motion.p
-                    className="text-base md:text-lg mb-12 text-center max-w-3xl mx-auto text-gray-700 dark:text-gray-300"
-                    variants={fadeInUp}
-                  >
-                    {t("projectsIntro")}
-                  </motion.p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {[1, 2, 3].map((project) => (
-                      <motion.div key={project} variants={fadeInUp}>
-                        <Card className="overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                          <CardContent className="p-6">
-                            <h3 className="text-lg md:text-xl font-semibold mb-3 text-gray-900 dark:text-white">
-                              {lang === "en"
-                                ? `Project ${project}`
-                                : `プロジェクト ${project}`}
-                            </h3>
-                            <p className="mb-4 text-sm md:text-base text-gray-700 dark:text-gray-300">
-                              {t("projectDescription")}
-                            </p>
-                            <Button className="w-full">
-                              {t("viewDetails")}
-                            </Button>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </div>
-                </>
-              )}
-              {section === "career" && (
-                <>
-                  <motion.p
-                    className="text-base md:text-lg mb-12 text-center max-w-3xl mx-auto text-gray-700 dark:text-gray-300"
-                    variants={fadeInUp}
-                  >
-                    {t("careerIntro")}
-                  </motion.p>
-                  <div className="max-w-3xl mx-auto">
-                    <Card>
-                      <CardContent className="p-4 md:p-6">
-                        <h3 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white">
-                          {t("jobTitle")}
-                        </h3>
-                        <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg">
-                          {t("companyName")}
-                        </p>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">
-                          2022-04 - 2024-03
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                  <h3 className="text-3xl md:text-4xl font-bold mt-16 mb-8 text-center text-gray-900 dark:text-white">
-                    {t("educationTitle")}
-                  </h3>
-                  <div className="max-w-3xl mx-auto space-y-8">
-                    <Card>
-                      <CardContent className="p-4 md:p-6">
-                        <h4 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white">
-                          {t("educationKyoto")}
-                        </h4>
-                        <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg">
-                          {t("major")}
-                        </p>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">
-                          - 2022-03
-                        </p>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent className="p-4 md:p-6">
-                        <h4 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white">
-                          {t("educationOU")}
-                        </h4>
-                        <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg">
-                          {t("planningToEnroll")}
-                        </p>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">
-                          2024-10 -
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </>
-              )}
-              {section === "contact" && (
-                <>
-                  <motion.p
-                    className="text-base md:text-lg mb-8 text-center max-w-3xl mx-auto text-gray-700 dark:text-gray-300"
-                    variants={fadeInUp}
-                  >
-                    {t("contactIntro")}
-                  </motion.p>
-                  <AnimatePresence mode="wait">
-                    {isConfirming ? (
-                      <motion.div
-                        key="confirmation"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <ConfirmationScreen />
-                      </motion.div>
-                    ) : (
-                      <motion.form
-                        className="space-y-6 max-w-xl mx-auto"
-                        onSubmit={handleSubmit}
-                        key="form"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <Input
-                          name="name"
-                          placeholder={t("contactName")}
-                          className="text-sm md:text-base"
-                          value={formData.name}
-                          onChange={handleInputChange}
-                          required
-                        />
-                        <Input
-                          name="email"
-                          type="email"
-                          placeholder={t("email")}
-                          className="text-sm md:text-base"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          required
-                        />
-                        <Textarea
-                          name="message"
-                          placeholder={t("message")}
-                          className="text-sm md:text-base"
-                          rows={6}
-                          value={formData.message}
-                          onChange={handleInputChange}
-                          required
-                        />
-                        <Button type="submit" className="w-full text-base">
-                          {t("confirm")}
-                        </Button>
-                      </motion.form>
-                    )}
-                  </AnimatePresence>
-                </>
-              )}
-            </div>
-          </motion.section>
-        )
-      )}
+                <div className="grid gap-8 md:gap-12">
+                  {Object.keys(skillCategories).map((category) =>
+                    renderSkillCategory(
+                      category as keyof typeof skillCategories
+                    )
+                  )}
+                </div>
+              </>
+            )}
+            {section === "project" && (
+              <>
+                <motion.p
+                  className="text-base md:text-lg mb-12 text-center max-w-3xl mx-auto text-gray-700 dark:text-gray-300"
+                  variants={fadeInUp}
+                >
+                  {t("projectsIntro")}
+                </motion.p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {[1, 2, 3].map((project) => (
+                    <motion.div key={project} variants={fadeInUp}>
+                      <Card className="overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                        <CardContent className="p-6">
+                          <h3 className="text-lg md:text-xl font-semibold mb-3 text-gray-900 dark:text-white">
+                            {lang === "en"
+                              ? `Project ${project}`
+                              : `プロジェクト ${project}`}
+                          </h3>
+                          <p className="mb-4 text-sm md:text-base text-gray-700 dark:text-gray-300">
+                            {t("projectDescription")}
+                          </p>
+                          <Button className="w-full">{t("viewDetails")}</Button>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              </>
+            )}
+            {section === "career" && (
+              <>
+                <motion.p
+                  className="text-base md:text-lg mb-12 text-center max-w-3xl mx-auto text-gray-700 dark:text-gray-300"
+                  variants={fadeInUp}
+                >
+                  {t("careerIntro")}
+                </motion.p>
+                <div className="max-w-3xl mx-auto">
+                  <Card>
+                    <CardContent className="p-4 md:p-6">
+                      <h3 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white">
+                        {t("jobTitle")}
+                      </h3>
+                      <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg">
+                        {t("companyName")}
+                      </p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">
+                        2022-04 - 2024-03
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+                <h3 className="text-3xl md:text-4xl font-bold mt-16 mb-8 text-center text-gray-900 dark:text-white">
+                  {t("educationTitle")}
+                </h3>
+                <div className="max-w-3xl mx-auto space-y-8">
+                  <Card>
+                    <CardContent className="p-4 md:p-6">
+                      <h4 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white">
+                        {t("educationKyoto")}
+                      </h4>
+                      <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg">
+                        {t("major")}
+                      </p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">
+                        2020-4 - 2022-03
+                      </p>
+                    </CardContent>
+                  </Card>
+                  {/* <Card>
+                    <CardContent className="p-4 md:p-6">
+                      <h4 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white">
+                        {t("educationOU")}
+                      </h4>
+                      <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg">
+                        {t("planningToEnroll")}
+                      </p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">
+                        2024-10 -
+                      </p>
+                    </CardContent>
+                  </Card> */}
+                </div>
+              </>
+            )}
+            {section === "contact" && (
+              <>
+                <motion.p
+                  className="text-base md:text-lg mb-8 text-center max-w-3xl mx-auto text-gray-700 dark:text-gray-300"
+                  variants={fadeInUp}
+                >
+                  {t("contactIntro")}
+                </motion.p>
+                <AnimatePresence mode="wait">
+                  {isConfirming ? (
+                    <motion.div
+                      key="confirmation"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <ConfirmationScreen />
+                    </motion.div>
+                  ) : (
+                    <motion.form
+                      className="space-y-6 max-w-xl mx-auto"
+                      onSubmit={handleSubmit}
+                      key="form"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Input
+                        name="name"
+                        placeholder={t("contactName") as string}
+                        className="text-sm md:text-base"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        required
+                      />
+                      <Input
+                        name="email"
+                        type="email"
+                        placeholder={t("email") as string}
+                        className="text-sm md:text-base"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        required
+                      />
+                      <Textarea
+                        name="message"
+                        placeholder={t("message") as string}
+                        className="text-sm md:text-base"
+                        rows={6}
+                        value={formData.message}
+                        onChange={handleInputChange}
+                        required
+                      />
+                      <Button type="submit" className="w-full text-base">
+                        {t("confirm")}
+                      </Button>
+                    </motion.form>
+                  )}
+                </AnimatePresence>
+              </>
+            )}
+          </div>
+        </motion.section>
+      ))}
 
       {/* フッター */}
       <footer className="py-8 bg-white dark:bg-gray-900 mt-auto">
