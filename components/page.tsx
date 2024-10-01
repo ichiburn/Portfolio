@@ -88,23 +88,16 @@ const translations = {
     advancedTechnologies: "先端技術",
     generativeAI: "生成AI",
     introduction: "自己紹介",
-    introText: [
-      "木造建築の構造設計者として働く中で、建設業界におけるより効率的な設計プロセスの必要性を実感しました。",
-      "この経験から、プログラミングやAI技術、Blockchain技術の習得を決意しました。",
-      "現在、様々なプログラミング言語や技術を学び、ゲーム開発、建設業界、不動産業界、金融業界等の革新的なテクノロジーソリューションの架け橋となり社会的に役立つことを目指しています。",
-    ],
-    skillsIntro: [
-      "私のスキルセットはウェブ開発から先端技術まで幅広く及びます。",
-      "SolidityとRustはまだ学習中ですが、HTML&CSS、JavaScript、TypeScript、Python、Reactを使用したプロジェクト制作には自信があります。",
-    ],
+    introText: [""],
+    skillsIntro: [""],
     projectsIntro:
       "以下は、私が手がけたプロジェクトの一部で、様々な技術を活用しています：",
-    careerIntro: "建築から情報技術への私のキャリアの軌跡：",
+    careerIntro: "",
     contactIntro:
       "新しい機会や協力のご提案をお待ちしています。お気軽にご連絡ください。",
     educationTitle: "学歴",
-    educationKyoto: "京都建築専門学校",
-    educationOU: "放送大学",
+    educationKyoto: "",
+    educationOU: "",
     major: "専攻：建築科",
     planningToEnroll: "編入学予定（3年次）",
     jobTitle: "プログラマー & クリエイター",
