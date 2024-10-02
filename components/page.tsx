@@ -99,7 +99,6 @@ const translations = {
     educationKyoto: "",
     educationOU: "",
     major: "専攻：建築科",
-    planningToEnroll: "編入学予定（3年次）",
     jobTitle: "プログラマー & クリエイター",
     companyName: "(株)デファンス設計",
     confirmTitle: "確認",
@@ -491,7 +490,7 @@ export function Page() {
           transition={{ delay: 0.6, duration: 0.8 }}
         >
           <a
-            href="mailto:ichi9328@gmail.com"
+            href="mailto:"
             target="_blank"
             rel="noopener noreferrer"
           >
